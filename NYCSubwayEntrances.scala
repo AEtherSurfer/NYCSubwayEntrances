@@ -1,71 +1,70 @@
+import com.github.tototoshi.csv.CSVReader
+import net.liftweb.json._
+import net.liftweb.json.Serialization.write
+
 object NYCSubwayEntrances {
   def main(args: Array[String]) = {
-  	import com.github.tototoshi.csv.CSVReader
-  	//http://www.mta.info/developers/data/nyct/subway/StationEntrances.csv
-  	val file = new java.io.File("StationEntrances.csv")
-  	val reader = CSVReader.open(file)
-  	reader.readNext //consume headers
-  	val entranceMap = list2multimap(
+    //http://www.mta.info/developers/data/nyct/subway/StationEntrances.csv
+    val file = new java.io.File("StationEntrances.csv")
+    val reader = CSVReader.open(file)
+    reader.readNext //consume headers
+    val entranceMap = list2multimap(
       reader.all map {
-    		case fields: List[String] => 
-  	  		// println(fields)
-  	  		(
+        case fields: List[String] => 
+          // println(fields)
+          (
             fields(2), 
-    	  		Entrance(
-    	  			fields(14).toBoolean,
-      				Option(
-                fields(15)
-              ),
-  	  				fields(16).toBoolean,
-  	  				fields(17),
-  	  				fields(18) match {case "YES" => true case _ => false},
-  	  				fields(19) match {case "YES" => true case _ => false},
-  	  				fields(20),
-  	  				fields(21),
-  	  				fields(22),
-  	  				fields(23),
-  	  				fields(24).toInt,
-  	  				fields(25).toInt
-    				)
-  	  		)
-    		}
+            Entrance(
+              fields(14).toBoolean,
+              Option(fields(15)),
+              fields(16).toBoolean,
+              fields(17),
+              fields(18) match {case "YES" => true case _ => false},
+              fields(19) match {case "YES" => true case _ => false},
+              fields(20),
+              fields(21),
+              fields(22),
+              fields(23),
+              fields(24).toInt,
+              fields(25).toInt
+            )
+          )
+        }
       )
-  	reader.close
-  	val reader2 = CSVReader.open(file)
-  	reader2.readNext //consume headers
-  	val stations = reader2.all map { case fields: List[String] =>
-  		Station(
-  			fields(2),
-  			fields(0),
-  			fields(1),
-  			colate(scala.collection.immutable.ListSet[String](
-  				fields(3),
-  				fields(4),
-  				fields(5),
-  				fields(6),
-  				fields(7),
-  				fields(8),
-  				fields(9),
-  				fields(10),
-  				fields(11),
-  				fields(12),
-  				fields(13)
-  			)),
+    reader.close
+    val reader2 = CSVReader.open(file)
+    reader2.readNext //consume headers
+    val stations = reader2.all map { case fields: List[String] =>
+      Station(
+        fields(2),
+        fields(0),
+        fields(1),
+        colate(scala.collection.immutable.ListSet[String](
+          fields(3),
+          fields(4),
+          fields(5),
+          fields(6),
+          fields(7),
+          fields(8),
+          fields(9),
+          fields(10),
+          fields(11),
+          fields(12),
+          fields(13)
+        )),
         entranceMap(fields(2)).toList
-  		)
-  	}
-  	reader2.close
+      )
+    }
+    reader2.close
 
-  	import net.liftweb.json._
-    import net.liftweb.json.Serialization.write
-  	implicit val formats = Serialization.formats(NoTypeHints)
-  	println(pretty(render(parse(write(stations.toSet)))))
+    implicit val formats = Serialization.formats(NoTypeHints)
+    println(pretty(render(parse(write(stations.toSet)))))
   }
 
-	import scala.collection.mutable.{HashMap, Set, MultiMap}
+  import scala.collection.mutable.{HashMap, Set, MultiMap}
 
-	def list2multimap[A, B](list: List[(A, B)]) = 
-	  list.foldLeft(new HashMap[A, Set[B]] with MultiMap[A, B]){(acc, pair) => acc.addBinding(pair._1, pair._2)}
+  def list2multimap[A, B](list: List[(A, B)]) = 
+    list.foldLeft(new HashMap[A, Set[B]] with MultiMap[A, B]){(acc, pair) => acc.addBinding(pair._1, pair._2)}
 
   def colate(set: scala.collection.immutable.ListSet[String]): List[String] =
     ((List[String]() ++ set) diff List("")).reverse
