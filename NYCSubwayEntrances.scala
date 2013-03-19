@@ -5,28 +5,31 @@ object NYCSubwayEntrances {
   	val file = new java.io.File("StationEntrances.csv")
   	val reader = CSVReader.open(file)
   	reader.readNext //consume headers
-  	val entranceMap = list2multimap(reader.all map {
-  		case fields: List[String] => 
-	  		// println(fields)
-	  		(fields(2), 
-	  		Entrance(
-	  			fields(14).toBoolean,
-  				Option(
-  					fields(15)),
-	  				fields(16).toBoolean,
-	  				fields(17),
-	  				fields(18) match {case "YES" => true case _ => false},
-	  				fields(19) match {case "YES" => true case _ => false},
-	  				fields(20),
-	  				fields(21),
-	  				fields(22),
-	  				fields(23),
-	  				fields(24).toInt,
-	  				fields(25).toInt
-  				)
-	  		)
-  		}
-  	)
+  	val entranceMap = list2multimap(
+      reader.all map {
+    		case fields: List[String] => 
+  	  		// println(fields)
+  	  		(
+            fields(2), 
+    	  		Entrance(
+    	  			fields(14).toBoolean,
+      				Option(
+                fields(15)
+              ),
+  	  				fields(16).toBoolean,
+  	  				fields(17),
+  	  				fields(18) match {case "YES" => true case _ => false},
+  	  				fields(19) match {case "YES" => true case _ => false},
+  	  				fields(20),
+  	  				fields(21),
+  	  				fields(22),
+  	  				fields(23),
+  	  				fields(24).toInt,
+  	  				fields(25).toInt
+    				)
+  	  		)
+    		}
+      )
   	reader.close
   	val reader2 = CSVReader.open(file)
   	reader2.readNext //consume headers
@@ -52,12 +55,9 @@ object NYCSubwayEntrances {
   		)
   	}
   	reader2.close
-  	// entranceMap.foreach(println)
-  	// stations.toSet.foreach(println)
-  	// val gson = new com.google.gson.GsonBuilder().setPrettyPrinting().create()
-  	// println(gson.toJson(stations))
+
   	import net.liftweb.json._
-	import net.liftweb.json.Serialization.{read, write}
+    import net.liftweb.json.Serialization.write
   	implicit val formats = Serialization.formats(NoTypeHints)
   	println(pretty(render(parse(write(stations.toSet)))))
   }
